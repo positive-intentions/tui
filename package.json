@@ -1,0 +1,33 @@
+{
+  "name": "tui",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "demo": "bun run demo-working.ts",
+    "todo": "bun run todo-demo.ts",
+    "demo-full": "bun run demo.ts",
+    "build": "tsc",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage",
+    "test:watch": "bun test --watch"
+  },
+  "keywords": [
+    "tui",
+    "terminal",
+    "opentui",
+    "component-library"
+  ],
+  "author": "",
+  "license": "MIT",
+  "description": "TUI component library built on OpenTUI",
+  "dependencies": {
+    "@opentui/core": "^0.1.67",
+    "@opentui/core-linux-x64": "^0.1.67"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.5",
+    "tsx": "^4.21.0",
+    "typescript": "^5.6.3"
+  }
+}

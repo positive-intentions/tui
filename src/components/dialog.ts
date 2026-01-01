@@ -1,0 +1,203 @@
+import { type CliRenderer, BoxRenderable, TextRenderable } from "@opentui/core"
+
+export interface DialogProps {
+  id?: string
+  title: string
+  message: string
+  confirmText?: string
+  cancelText?: string
+  width?: number
+  zIndex?: number
+}
+
+export class Dialog extends BoxRenderable {
+  private renderer: CliRenderer
+  private onConfirm?: () => void
+  private onCancel?: () => void
+
+  constructor(renderer: CliRenderer, props: DialogProps) {
+    super(renderer, {
+      id: props.id || "dialog",
+      width: props.width || 40,
+      height: 10,
+      position: "absolute",
+      backgroundColor: "#1E293B",
+      border: true,
+      borderStyle: "double",
+      borderColor: "#EF4444",
+      flexDirection: "column",
+      alignItems: "stretch",
+      zIndex: props.zIndex || 1000,
+    })
+
+    this.renderer = renderer
+    this.createContent(props)
+  }
+
+  private createContent(props: DialogProps): void {
+    const header = new BoxRenderable(this.renderer, {
+      id: "dialog-header",
+      height: 3,
+      backgroundColor: "#EF4444",
+      flexDirection: "row",
+      alignItems: "center",
+      flexGrow: 0,
+    })
+
+    const title = new TextRenderable(this.renderer, {
+      id: "dialog-title",
+      content: props.title,
+      fg: "#FFFFFF",
+    })
+    header.add(title)
+    this.add(header)
+
+    const body = new BoxRenderable(this.renderer, {
+      id: "dialog-body",
+      flexGrow: 1,
+      flexDirection: "column",
+      alignItems: "stretch",
+      padding: 2,
+    })
+
+    const message = new TextRenderable(this.renderer, {
+      id: "dialog-message",
+      content: props.message,
+      fg: "#E2E8F0",
+    })
+    body.add(message)
+
+    const buttonsBox = new BoxRenderable(this.renderer, {
+      id: "dialog-buttons",
+      height: 3,
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      alignItems: "center",
+      flexGrow: 0,
+      marginTop: 1,
+    })
+
+    const cancelBtn = new BoxRenderable(this.renderer, {
+      id: "dialog-cancel-btn",
+      width: 10,
+      height: 1,
+      backgroundColor: "#475569",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      border: true,
+      borderStyle: "single",
+      borderColor: "#64748B",
+    })
+
+    const cancelText = new TextRenderable(this.renderer, {
+      id: "dialog-cancel-text",
+      content: props.cancelText || "[Cancel]",
+      fg: "#94A3B8",
+    })
+    cancelBtn.add(cancelText)
+    buttonsBox.add(cancelBtn)
+
+    const space = new TextRenderable(this.renderer, {
+      id: "dialog-btn-space",
+      content: " ",
+      width: 2,
+    })
+    buttonsBox.add(space)
+
+    const confirmBtn = new BoxRenderable(this.renderer, {
+      id: "dialog-confirm-btn",
+      width: 10,
+      height: 1,
+      backgroundColor: "#DC2626",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      border: true,
+      borderStyle: "single",
+      borderColor: "#F87171",
+    })
+
+    const confirmText = new TextRenderable(this.renderer, {
+      id: "dialog-confirm-text",
+      content: props.confirmText || "[Confirm]",
+      fg: "#FFFFFF",
+    })
+    confirmBtn.add(confirmText)
+    buttonsBox.add(confirmBtn)
+
+    body.add(buttonsBox)
+    this.add(body)
+
+    cancelBtn.onMouseUp = (event) => {
+      if (event.button === 0) {
+        event.stopPropagation()
+        if (this.onCancel) this.onCancel()
+      }
+    }
+
+    confirmBtn.onMouseUp = (event) => {
+      if (event.button === 0) {
+        event.stopPropagation()
+        if (this.onConfirm) this.onConfirm()
+      }
+    }
+  }
+
+  show(onConfirm: () => void, onCancel: () => void): void {
+    this.onConfirm = onConfirm
+    this.onCancel = onCancel
+
+    this.visible = true
+
+    const root = this.renderer.root
+    root.add(this)
+
+    this.centerDialog()
+    this.renderer.requestRender()
+  }
+
+  hide(): void {
+    this.visible = false
+
+    if (this.renderer.currentFocusedRenderable) {
+      this.renderer.currentFocusedRenderable.blur()
+    }
+
+    this.renderer.root.remove(this.id)
+
+    this.renderer.requestRender()
+  }
+
+  private centerDialog(): void {
+    const rootWidth = this.renderer.root.width
+    const rootHeight = this.renderer.root.height
+
+    this.left = Math.floor((rootWidth - this.width) / 2)
+    this.top = Math.floor((rootHeight - this.height) / 2)
+  }
+
+  setMessage(message: string): void {
+    const messageText = this.findDescendantById("dialog-message") as TextRenderable
+    if (messageText) {
+      messageText.content = message
+      this.renderer.requestRender()
+    }
+  }
+
+  setConfirmText(text: string): void {
+    const confirmText = this.findDescendantById("dialog-confirm-text") as TextRenderable
+    if (confirmText) {
+      confirmText.content = text
+      this.renderer.requestRender()
+    }
+  }
+
+  setCancelText(text: string): void {
+    const cancelText = this.findDescendantById("dialog-cancel-text") as TextRenderable
+    if (cancelText) {
+      cancelText.content = text
+      this.renderer.requestRender()
+    }
+  }
+}
