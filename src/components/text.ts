@@ -53,8 +53,18 @@ export class Heading extends Text {
     const color = props.fg || sizes[props.level]
 
     super(renderer, {
-      ...props,
-      content: bold(fg(color)(props.content)),
+      id: props.id,
+      content: t`${bold(fg(color)(props.content))}`,
+      width: props.width,
+      height: props.height,
+      fg: color,
+      bg: props.bg,
+      position: props.position,
+      left: props.left,
+      top: props.top,
+      right: props.right,
+      bottom: props.bottom,
+      zIndex: props.zIndex,
     })
   }
 }
@@ -66,9 +76,18 @@ export interface ParagraphProps extends TextProps {
 export class Paragraph extends Text {
   constructor(renderer: CliRenderer, props: ParagraphProps) {
     super(renderer, {
-      ...props,
+      id: props.id,
       content: props.content,
+      width: props.width,
+      height: props.height,
       fg: props.fg || "#94A3B8",
+      bg: props.bg,
+      position: props.position,
+      left: props.left,
+      top: props.top,
+      right: props.right,
+      bottom: props.bottom,
+      zIndex: props.zIndex,
     })
   }
 }
@@ -81,9 +100,18 @@ export interface LabelProps extends TextProps {
 export class Label extends Text {
   constructor(renderer: CliRenderer, props: LabelProps) {
     super(renderer, {
-      ...props,
-      content: bold(fg("#CBD5E1")(props.content + ":")),
+      id: props.id,
+      content: t`${bold(fg("#CBD5E1")(props.content + ":"))}`,
+      width: props.width,
+      height: props.height,
       fg: props.fg || "#CBD5E1",
+      bg: props.bg,
+      position: props.position,
+      left: props.left,
+      top: props.top,
+      right: props.right,
+      bottom: props.bottom,
+      zIndex: props.zIndex,
     })
   }
 }
@@ -113,9 +141,18 @@ export class Status extends Text {
     const icon = icons[props.status]
 
     super(renderer, {
-      ...props,
+      id: props.id,
       content: t`${fg(color)(bold(icon + " "))}${props.content}`,
-      fg: props.fg || colors[props.status],
+      width: props.width,
+      height: props.height,
+      fg: props.fg || color,
+      bg: props.bg,
+      position: props.position,
+      left: props.left,
+      top: props.top,
+      right: props.right,
+      bottom: props.bottom,
+      zIndex: props.zIndex,
     })
   }
 }
@@ -127,10 +164,18 @@ export interface CodeProps extends TextProps {
 export class Code extends Text {
   constructor(renderer: CliRenderer, props: CodeProps) {
     super(renderer, {
-      ...props,
+      id: props.id,
       content: props.content,
+      width: props.width,
+      height: props.height,
       fg: props.fg || "#A5B4FC",
       bg: props.bg || "#1E1B4B",
+      position: props.position,
+      left: props.left,
+      top: props.top,
+      right: props.right,
+      bottom: props.bottom,
+      zIndex: props.zIndex,
     })
   }
 }

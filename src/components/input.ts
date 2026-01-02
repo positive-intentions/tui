@@ -17,6 +17,9 @@ export interface InputProps {
   cursorColor?: string
   value?: string
   maxLength?: number
+  border?: boolean
+  borderStyle?: "single" | "double"
+  borderColor?: string
 }
 
 export class Input extends InputRenderable {
@@ -38,6 +41,9 @@ export class Input extends InputRenderable {
       cursorColor: props.cursorColor || "#FACC15",
       value: props.value || "",
       maxLength: props.maxLength,
+      border: props.border !== undefined ? props.border : true,
+      borderStyle: props.borderStyle || "single",
+      borderColor: props.borderColor || "#475569",
     })
 
     this.onMouseDown = (event: any) => {

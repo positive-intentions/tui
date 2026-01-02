@@ -10,6 +10,34 @@
 
 ## Status: ✅ PRODUCTION READY
 
+## Error Handling ✅
+
+All demos now include comprehensive error handling to gracefully manage application crashes:
+
+**Features:**
+- Global error handlers for uncaught exceptions and rejections
+- Automatic cleanup of renderer resources
+- Detailed error messages with stack traces
+- Graceful signal handling (Ctrl+C, SIGTERM)
+- Easy integration with any app
+
+**Usage:**
+```typescript
+import { setupErrorHandlers, setRenderer, withErrorHandling } from "./src/error-handler.js"
+
+setupErrorHandlers("My App")
+
+async function run() {
+  const renderer = await createCliRenderer({ exitOnCtrlC: true })
+  setRenderer(renderer)
+  // ... app code
+}
+
+withErrorHandling(run, "My App")
+```
+
+See [ERROR_HANDLING.md](./ERROR_HANDLING.md) for complete documentation.
+
 ### Test Results by Component
 
 ### Layout Components (100% Passing)
@@ -47,6 +75,11 @@
 |------------|--------|-------------|
 | **Button** | 12 | ✅ PASS | initialization, colors, setLabel method, edge cases |
 | **IconButton** | N/A | Inherits Button tests |
+
+### Dropdown Component
+| Component | Status |
+|------------|--------|
+| **Dropdown** | ✅ WORKING | Custom floating menu component with click-outside detection, auto-positioning, keyboard support (Esc to close) |
 
 ## What's Tested ✅
 
@@ -236,4 +269,22 @@ npm run demo-full
 
 Complete component library demonstration (may require larger terminal).
 
-Press **Ctrl+C** to exit any demo.
+### Dropdown Demo
+```bash
+npm run dropdown
+```
+
+Interactive dropdown component with floating menu:
+
+**Features:**
+- **Floating menu**: Click dropdown to open, displays options in dialog
+- **Auto-positioning**: Menu adjusts position to stay on-screen
+- **Click-outside**: Clicking outside closes the menu
+- **Keyboard support**: Press `Esc` to close menu
+- **Multiple dropdowns**: Multiple dropdowns work independently
+- **Controlled dropdown**: Prev/Next buttons for programmatic control
+- **Scrollable list**: Long lists with scrolling
+- **Hover states**: Visual feedback on hover
+- **Disabled state**: Can disable dropdowns
+
+All demos have **graceful error handling** - press **Ctrl+C** to exit cleanly.

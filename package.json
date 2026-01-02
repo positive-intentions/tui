@@ -7,6 +7,8 @@
     "demo": "bun run demo-working.ts",
     "todo": "bun run todo-demo.ts",
     "demo-full": "bun run demo.ts",
+    "dropdown": "bun run demo-dropdown.ts",
+    "storybook": "bun run storybook.ts",
     "build": "tsc",
     "test": "bun test",
     "test:coverage": "bun test --coverage",

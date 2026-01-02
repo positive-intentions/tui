@@ -1,5 +1,8 @@
 import { type CliRenderer, BoxRenderable, TextRenderable, InputRenderable } from "@opentui/core"
 
+// Static registry to track all edit dialog instances
+const editDialogInstances = new Map<string, EditDialog>()
+
 export interface EditDialogProps {
   id?: string
   title: string
@@ -34,6 +37,11 @@ export class EditDialog extends BoxRenderable {
 
     this.renderer = renderer
     this.createContent(props)
+    
+    // Register this instance
+    if (this.id) {
+      editDialogInstances.set(this.id, this)
+    }
   }
 
   private createContent(props: EditDialogProps): void {
@@ -149,6 +157,7 @@ export class EditDialog extends BoxRenderable {
       if (event.button === 0) {
         event.stopPropagation()
         if (this.onCancel) this.onCancel()
+        this.hide()
       }
     }
 
@@ -156,6 +165,7 @@ export class EditDialog extends BoxRenderable {
       if (event.button === 0) {
         event.stopPropagation()
         if (this.onConfirm) this.onConfirm()
+        this.hide()
       }
     }
   }
@@ -227,5 +237,46 @@ export class EditDialog extends BoxRenderable {
       cancelText.content = text
       this.renderer.requestRender()
     }
+  }
+
+  public static closeAllOpenDialogs(renderer: CliRenderer): void {
+    // Check renderer.root directly for any edit dialog elements
+    // This is the most reliable way to find all dialogs, regardless of registry
+    const rootChildren = renderer.root.getChildren()
+    
+    for (const child of rootChildren) {
+      if (!child.id) continue
+      
+      // Check if it looks like an edit dialog (has edit-dialog-specific child elements)
+      const editDialogHeader = child.findDescendantById?.("edit-dialog-header")
+      if (editDialogHeader) {
+        // Try to use the registry dialog's hide() method if available
+        const dialog = editDialogInstances.get(child.id)
+        if (dialog && dialog.visible) {
+          dialog.hide()
+        } else {
+          // Not in registry or not visible, remove it directly
+          try {
+            // Set visible to false first
+            if ('visible' in child) {
+              (child as any).visible = false
+            }
+            renderer.root.remove(child.id)
+          } catch (e) {
+            // Ignore errors if element doesn't exist
+          }
+        }
+      }
+    }
+    
+    // Also close any dialogs from registry that might not be in root yet
+    for (const [dialogId, dialog] of editDialogInstances.entries()) {
+      if (dialog.visible) {
+        dialog.hide()
+      }
+    }
+    
+    // Force a render to update the display
+    renderer.requestRender()
   }
 }

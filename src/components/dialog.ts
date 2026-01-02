@@ -1,5 +1,8 @@
 import { type CliRenderer, BoxRenderable, TextRenderable } from "@opentui/core"
 
+// Static registry to track all dialog instances
+const dialogInstances = new Map<string, Dialog>()
+
 export interface DialogProps {
   id?: string
   title: string
@@ -32,6 +35,11 @@ export class Dialog extends BoxRenderable {
 
     this.renderer = renderer
     this.createContent(props)
+    
+    // Register this instance
+    if (this.id) {
+      dialogInstances.set(this.id, this)
+    }
   }
 
   private createContent(props: DialogProps): void {
@@ -133,6 +141,7 @@ export class Dialog extends BoxRenderable {
       if (event.button === 0) {
         event.stopPropagation()
         if (this.onCancel) this.onCancel()
+        this.hide()
       }
     }
 
@@ -140,6 +149,7 @@ export class Dialog extends BoxRenderable {
       if (event.button === 0) {
         event.stopPropagation()
         if (this.onConfirm) this.onConfirm()
+        this.hide()
       }
     }
   }
@@ -199,5 +209,46 @@ export class Dialog extends BoxRenderable {
       cancelText.content = text
       this.renderer.requestRender()
     }
+  }
+
+  public static closeAllOpenDialogs(renderer: CliRenderer): void {
+    // Check renderer.root directly for any dialog elements
+    // This is the most reliable way to find all dialogs, regardless of registry
+    const rootChildren = renderer.root.getChildren()
+    
+    for (const child of rootChildren) {
+      if (!child.id) continue
+      
+      // Check if it looks like a dialog (has dialog-specific child elements)
+      const dialogHeader = child.findDescendantById?.("dialog-header")
+      if (dialogHeader) {
+        // Try to use the registry dialog's hide() method if available
+        const dialog = dialogInstances.get(child.id)
+        if (dialog && dialog.visible) {
+          dialog.hide()
+        } else {
+          // Not in registry or not visible, remove it directly
+          try {
+            // Set visible to false first
+            if ('visible' in child) {
+              (child as any).visible = false
+            }
+            renderer.root.remove(child.id)
+          } catch (e) {
+            // Ignore errors if element doesn't exist
+          }
+        }
+      }
+    }
+    
+    // Also close any dialogs from registry that might not be in root yet
+    for (const [dialogId, dialog] of dialogInstances.entries()) {
+      if (dialog.visible) {
+        dialog.hide()
+      }
+    }
+    
+    // Force a render to update the display
+    renderer.requestRender()
   }
 }

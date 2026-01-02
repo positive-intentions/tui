@@ -30,7 +30,7 @@ class Heading extends Text {
     const color = props.fg || sizes[props.level];
     super(renderer, {
       id: props.id,
-      content: t`${bold(fg(color)(props.content))}`,
+      content: bold(fg(color)(props.content)),
       width: props.width,
       height: props.height,
       fg: color,
@@ -66,7 +66,7 @@ class Label extends Text {
   constructor(renderer, props) {
     super(renderer, {
       id: props.id,
-      content: t`${bold(fg("#CBD5E1")(props.content + ":"))}`,
+      content: bold(fg("#CBD5E1")(props.content + ":")),
       width: props.width,
       height: props.height,
       fg: props.fg || "#CBD5E1",

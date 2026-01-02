@@ -1,9 +1,13 @@
 import { createCliRenderer, BoxRenderable, TextRenderable } from "@opentui/core"
+import { setupErrorHandlers, setRenderer, withErrorHandling } from "./src/error-handler.js"
+
+setupErrorHandlers("Simple Demo")
 
 async function run() {
   const renderer = await createCliRenderer({
     exitOnCtrlC: true,
   })
+  setRenderer(renderer)
 
   renderer.setBackgroundColor("#0F172A")
 
@@ -42,4 +46,4 @@ async function run() {
   renderer.start()
 }
 
-run().catch(console.error)
+withErrorHandling(run, "Simple Demo")

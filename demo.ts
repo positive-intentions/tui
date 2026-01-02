@@ -17,8 +17,11 @@ import {
   Button,
   IconButton,
 } from "./src/index.js"
+import { setupErrorHandlers, setRenderer, withErrorHandling } from "./src/error-handler.js"
 
 let renderer: CliRenderer | null = null
+
+setupErrorHandlers("TUI Demo")
 
 const options: SelectOption[] = [
   { name: "Option 1", description: "This is option one", value: "option1" },
@@ -39,6 +42,7 @@ export async function run() {
     exitOnCtrlC: false,
     targetFps: 60,
   })
+  setRenderer(renderer)
 
   renderer.setBackgroundColor("#0F172A")
 
@@ -362,4 +366,4 @@ export async function run() {
   renderer.start()
 }
 
-run().catch(console.error)
+withErrorHandling(run, "TUI Demo")

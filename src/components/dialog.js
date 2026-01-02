@@ -1,21 +1,20 @@
-import { BoxRenderable, TextRenderable, InputRenderable } from "@opentui/core";
-// Static registry to track all edit dialog instances
-const editDialogInstances = new Map();
-class EditDialog extends BoxRenderable {
+import { BoxRenderable, TextRenderable } from "@opentui/core";
+// Static registry to track all dialog instances
+const dialogInstances = new Map();
+class Dialog extends BoxRenderable {
   renderer;
   onConfirm;
   onCancel;
-  inputField;
   constructor(renderer, props) {
     super(renderer, {
-      id: props.id || "edit-dialog",
-      width: props.width || 45,
+      id: props.id || "dialog",
+      width: props.width || 40,
       height: 10,
       position: "absolute",
       backgroundColor: "#1E293B",
       border: true,
       borderStyle: "double",
-      borderColor: "#FACC15",
+      borderColor: "#EF4444",
       flexDirection: "column",
       alignItems: "stretch",
       zIndex: props.zIndex || 1e3
@@ -24,53 +23,40 @@ class EditDialog extends BoxRenderable {
     this.createContent(props);
     // Register this instance
     if (this.id) {
-      editDialogInstances.set(this.id, this);
+      dialogInstances.set(this.id, this);
     }
   }
   createContent(props) {
     const header = new BoxRenderable(this.renderer, {
-      id: "edit-dialog-header",
+      id: "dialog-header",
       height: 3,
-      backgroundColor: "#FACC15",
+      backgroundColor: "#EF4444",
       flexDirection: "row",
       alignItems: "center",
       flexGrow: 0
     });
     const title = new TextRenderable(this.renderer, {
-      id: "edit-dialog-title",
+      id: "dialog-title",
       content: props.title,
-      fg: "#1E293B"
+      fg: "#FFFFFF"
     });
     header.add(title);
     this.add(header);
     const body = new BoxRenderable(this.renderer, {
-      id: "edit-dialog-body",
+      id: "dialog-body",
       flexGrow: 1,
       flexDirection: "column",
       alignItems: "stretch",
       padding: 2
     });
-    if (props.label) {
-      const labelText = new TextRenderable(this.renderer, {
-        id: "edit-dialog-label",
-        content: props.label,
-        fg: "#94A3B8"
-      });
-      body.add(labelText);
-    }
-    this.inputField = new InputRenderable(this.renderer, {
-      id: "edit-dialog-input",
-      width: props.width ? props.width - 6 : 39,
-      height: 3,
-      placeholder: props.placeholder || "Enter text...",
-      placeholderColor: "#64748B",
-      backgroundColor: "#0F172A",
-      textColor: "#F8FAFC",
-      cursorColor: "#FACC15"
+    const message = new TextRenderable(this.renderer, {
+      id: "dialog-message",
+      content: props.message,
+      fg: "#E2E8F0"
     });
-    body.add(this.inputField);
+    body.add(message);
     const buttonsBox = new BoxRenderable(this.renderer, {
-      id: "edit-dialog-buttons",
+      id: "dialog-buttons",
       height: 3,
       flexDirection: "row",
       justifyContent: "flex-end",
@@ -79,7 +65,7 @@ class EditDialog extends BoxRenderable {
       marginTop: 1
     });
     const cancelBtn = new BoxRenderable(this.renderer, {
-      id: "edit-dialog-cancel-btn",
+      id: "dialog-cancel-btn",
       width: 10,
       height: 1,
       backgroundColor: "#475569",
@@ -91,33 +77,33 @@ class EditDialog extends BoxRenderable {
       borderColor: "#64748B"
     });
     const cancelText = new TextRenderable(this.renderer, {
-      id: "edit-dialog-cancel-text",
+      id: "dialog-cancel-text",
       content: props.cancelText || "[Cancel]",
       fg: "#94A3B8"
     });
     cancelBtn.add(cancelText);
     buttonsBox.add(cancelBtn);
     const space = new TextRenderable(this.renderer, {
-      id: "edit-dialog-btn-space",
+      id: "dialog-btn-space",
       content: " ",
       width: 2
     });
     buttonsBox.add(space);
     const confirmBtn = new BoxRenderable(this.renderer, {
-      id: "edit-dialog-confirm-btn",
-      width: 8,
+      id: "dialog-confirm-btn",
+      width: 10,
       height: 1,
-      backgroundColor: "#16A34A",
+      backgroundColor: "#DC2626",
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
       border: true,
       borderStyle: "single",
-      borderColor: "#22C55E"
+      borderColor: "#F87171"
     });
     const confirmText = new TextRenderable(this.renderer, {
-      id: "edit-dialog-confirm-text",
-      content: props.confirmText || "[Save]",
+      id: "dialog-confirm-text",
+      content: props.confirmText || "[Confirm]",
       fg: "#FFFFFF"
     });
     confirmBtn.add(confirmText);
@@ -139,26 +125,20 @@ class EditDialog extends BoxRenderable {
       }
     };
   }
-  show(onConfirm, onCancel, initialValue) {
+  show(onConfirm, onCancel) {
     this.onConfirm = onConfirm;
     this.onCancel = onCancel;
-    if (initialValue !== void 0 && this.inputField) {
-      this.inputField.value = initialValue;
-    }
     this.visible = true;
     const root = this.renderer.root;
     root.add(this);
     this.centerDialog();
-    if (this.inputField) {
-      this.inputField.focus();
-    }
     this.renderer.requestRender();
   }
   hide() {
-    if (this.inputField && this.inputField.focused) {
-      this.inputField.blur();
-    }
     this.visible = false;
+    if (this.renderer.currentFocusedRenderable) {
+      this.renderer.currentFocusedRenderable.blur();
+    }
     this.renderer.root.remove(this.id);
     this.renderer.requestRender();
   }
@@ -168,40 +148,38 @@ class EditDialog extends BoxRenderable {
     this.left = Math.floor((rootWidth - this.width) / 2);
     this.top = Math.floor((rootHeight - this.height) / 2);
   }
-  setValue(value) {
-    if (this.inputField) {
-      this.inputField.value = value;
+  setMessage(message) {
+    const messageText = this.findDescendantById("dialog-message");
+    if (messageText) {
+      messageText.content = message;
       this.renderer.requestRender();
     }
   }
-  getValue() {
-    return this.inputField?.value || "";
-  }
   setConfirmText(text) {
-    const confirmText = this.findDescendantById("edit-dialog-confirm-text");
+    const confirmText = this.findDescendantById("dialog-confirm-text");
     if (confirmText) {
       confirmText.content = text;
       this.renderer.requestRender();
     }
   }
   setCancelText(text) {
-    const cancelText = this.findDescendantById("edit-dialog-cancel-text");
+    const cancelText = this.findDescendantById("dialog-cancel-text");
     if (cancelText) {
       cancelText.content = text;
       this.renderer.requestRender();
     }
   }
   static closeAllOpenDialogs(renderer) {
-    // Check renderer.root directly for any edit dialog elements
+    // Check renderer.root directly for any dialog elements
     // This is the most reliable way to find all dialogs, regardless of registry
     const rootChildren = renderer.root.getChildren();
     for (const child of rootChildren) {
       if (!child.id) continue;
-      // Check if it looks like an edit dialog (has edit-dialog-specific child elements)
-      const editDialogHeader = child.findDescendantById?.("edit-dialog-header");
-      if (editDialogHeader) {
+      // Check if it looks like a dialog (has dialog-specific child elements)
+      const dialogHeader = child.findDescendantById?.("dialog-header");
+      if (dialogHeader) {
         // Try to use the registry dialog's hide() method if available
-        const dialog = editDialogInstances.get(child.id);
+        const dialog = dialogInstances.get(child.id);
         if (dialog && dialog.visible) {
           dialog.hide();
         } else {
@@ -219,7 +197,7 @@ class EditDialog extends BoxRenderable {
       }
     }
     // Also close any dialogs from registry that might not be in root yet
-    for (const [dialogId, dialog] of editDialogInstances.entries()) {
+    for (const [dialogId, dialog] of dialogInstances.entries()) {
       if (dialog.visible) {
         dialog.hide();
       }
@@ -229,5 +207,5 @@ class EditDialog extends BoxRenderable {
   }
 }
 export {
-  EditDialog
+  Dialog
 };

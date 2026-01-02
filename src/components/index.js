@@ -3,3 +3,6 @@ export * from "./text.js";
 export * from "./input.js";
 export * from "./select.js";
 export * from "./button.js";
+export * from "./dialog.js";
+export * from "./edit-dialog.js";
+export * from "./dropdown.js";

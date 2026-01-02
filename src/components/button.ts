@@ -1,4 +1,4 @@
-import { type CliRenderer, BoxRenderable, TextRenderable } from "@opentui/core"
+import { type CliRenderer, BoxRenderable, TextRenderable, type MouseEvent } from "@opentui/core"
 
 export interface ButtonProps {
   id?: string
@@ -75,6 +75,14 @@ export class Button extends BoxRenderable {
   }
 
   private setupMouseEvents(): void {
+    // Use onMouseUp for click handling (works better with nested containers)
+    this.onMouseUp = (event: MouseEvent) => {
+      if (event.button === 0 && this.onClickHandler && !this.disabled) {
+        this.onClickHandler()
+      }
+    }
+
+    // Keep global mousemove listener for hover effects
     this.renderer.on("mousemove", (x: number, y: number) => {
       if (this.containsPoint(x, y)) {
         if (!this.isHovered) {
@@ -86,12 +94,6 @@ export class Button extends BoxRenderable {
           this.isHovered = false
           this.updateHoverState()
         }
-      }
-    })
-
-    this.renderer.on("mousedown", (x: number, y: number) => {
-      if (this.containsPoint(x, y) && this.onClickHandler && !this.disabled) {
-        this.onClickHandler()
       }
     })
   }
@@ -153,9 +155,21 @@ export interface IconButtonProps extends Omit<ButtonProps, "label"> {
 export class IconButton extends Button {
   constructor(renderer: CliRenderer, props: IconButtonProps) {
     super(renderer, {
-      ...props,
+      id: props.id,
       label: props.icon,
       width: props.width || 3,
+      height: props.height,
+      backgroundColor: props.backgroundColor,
+      textColor: props.textColor,
+      hoverBackgroundColor: props.hoverBackgroundColor,
+      disabled: props.disabled,
+      onClick: props.onClick,
+      position: props.position,
+      left: props.left,
+      top: props.top,
+      right: props.right,
+      bottom: props.bottom,
+      zIndex: props.zIndex
     })
   }
 }
